@@ -7,7 +7,8 @@
  *  See the license file included with this source.
  */
 
-#include <nmeaparse/NMEACommand.h>
+#include <NMEACommand.h>
+#include <NMEAParser.h>
 #include <iomanip>
 #include <sstream>
 
