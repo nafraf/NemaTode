@@ -14,4 +14,17 @@ set(LIB_SOURCES
 add_library(NemaTode SHARED ${LIB_SOURCES})
 target_include_directories(NemaTode PRIVATE include/nmeaparse)
 
-install(TARGETS NemaTode DESTINATION ${EXE_DIR})
+install(TARGETS NemaTode DESTINATION ${LIB_DIR})
+
+set(LIB_HEADERS
+        include/nmeaparse/Event.h
+        include/nmeaparse/GPSFix.h
+        include/nmeaparse/GPSService.h
+        include/nmeaparse/NMEACommand.h
+        include/nmeaparse/nmea.h
+        include/nmeaparse/NMEAParser.h
+        include/nmeaparse/NumberConversion.h
+        )
+
+install(FILES ${LIB_HEADERS} DESTINATION ${INCLUDE_DIR})
+
