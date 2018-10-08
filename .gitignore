@@ -16,12 +16,14 @@
 *.pyc
 *.cbp
 *.a
+*.deb
 
 #CMake generated files #
 ########################
 CMakeCache.txt
 CMakeFiles/
 cmake-build-debug/
+_CPack_Packages/
 CMakeScripts
 Testing
 Makefile
