@@ -172,7 +172,7 @@ time_t GPSTimestamp::getTime() {
 	t.tm_hour = hour;
 	t.tm_min = min;
 	t.tm_sec = (int)sec;
-	return mktime(&t);
+	return mktime(&t) - timezone; // - timezone required as mktime assume that the tm time is local time not UTC.
 }
 
 void GPSTimestamp::setTime(double raw_ts){
