@@ -43,8 +43,8 @@ std::string NMEAParseError::what(){
 NMEASentence::NMEASentence() 
 : isvalid(false)
 , checksumIsCalculated(false)
-, calculatedChecksum(0)
 , parsedChecksum(0)
+, calculatedChecksum(0)
 { }
 
 NMEASentence::~NMEASentence()
@@ -109,9 +109,9 @@ void trim(string& str){
 
 
 NMEAParser::NMEAParser() 
-: log(false)
+: fillingbuffer(false)
 , maxbuffersize(NMEA_PARSER_MAX_BUFFER_SIZE)
-, fillingbuffer(false)
+, log(false)
 { }
 
 NMEAParser::~NMEAParser() 
