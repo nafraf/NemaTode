@@ -93,6 +93,9 @@ void GPSService::attachToParser(NMEAParser& _parser){
 		this->read_GPVTG(nmea);
 	});
 	//GNxxx Commands
+	_parser.setSentenceHandler("GNGLL", [this](const NMEASentence& nmea){
+		this->read_xxGLL(nmea);
+	});
 	_parser.setSentenceHandler("GNGGA", [this](const NMEASentence& nmea){
 		this->read_GPGGA(nmea);
 	});
@@ -525,5 +528,88 @@ void GPSService::read_GPVTG(const NMEASentence& nmea){
 		NMEAParseError pe("GPS Data Bad Format [$GPVTG] :: " + ex.message, nmea);
 		throw pe;
 	}
+}
+
+void GPSService::read_xxGLL(const NMEASentence& nmea){
+	/*
+	$GNGLL,0325.44196,N,07632.59389,W,143426.00,A,D*62
+
+	where
+	GLL		Latitude and longitude, with time of position fix and status
+	[0-1] 	0325.44196,N   	Latitude 3 deg 25.44' N
+	[2-3] 	07632.59389,W  	Longitude 76 deg 32.59' E
+	[4]		143426.00		UTC time
+	[5]		A            	Status A=active or V=Void.
+	[6]		D				posMode: NMEA v2.3 and above only
+	[7]		*62				Checksum
+
+	posMode possible values:
+	N = No fix, E = Estimated/Dead reckoning fix, A = Autonomous GNSS fix, D =Differential GNSS fix, F = RTK float, R = RTK fixed
+	*/
+
+	try
+	{
+		if (!nmea.checksumOK()){
+			throw NMEAParseError("Checksum is invalid!");
+		}
+
+		if (nmea.parameters.size() < 7){
+			throw NMEAParseError("GPS data is missing parameters.");
+		}
+
+		string sll;
+		string dir;
+		// LAT
+		sll = nmea.parameters[0];
+		dir = nmea.parameters[1];
+		if (sll.size() > 0){
+			this->fix.latitude = convertLatLongToDeg(sll, dir);
+		}
+
+		// LONG
+		sll = nmea.parameters[2];
+		dir = nmea.parameters[3];
+		if (sll.size() > 0){
+			this->fix.longitude = convertLatLongToDeg(sll, dir);
+		}
+
+		// TIMESTAMP
+		this->fix.timestamp.setTime(parseDouble(nmea.parameters[4]));
+
+		// ACTIVE
+		bool lockupdate = false;
+		char status = 'V';
+		if (nmea.parameters[5].size() > 0){
+			status = nmea.parameters[5][0];
+		}
+		this->fix.status = status;
+		if (status == 'V'){
+			lockupdate = this->fix.setlock(false);
+		}
+		else if (status == 'A') {
+			lockupdate = this->fix.setlock(true);
+		}
+		else {
+			lockupdate = this->fix.setlock(false);		//not A or V, so must be wrong... no lock
+		}
+
+		//calling handlers
+		if (lockupdate){
+			this->onLockStateChanged(this->fix.haslock);
+		}
+		this->onUpdate();
+
+	}
+	catch (NumberConversionError& ex)
+	{
+		NMEAParseError pe("GPS Number Bad Format [$xxGLL] :: " + ex.message, nmea);
+		throw pe;
+	}
+	catch (NMEAParseError& ex)
+	{
+		NMEAParseError pe("GPS Data Bad Format [$xxGLL] :: " + ex.message, nmea);
+		throw pe;
+	}
+
 }
 
